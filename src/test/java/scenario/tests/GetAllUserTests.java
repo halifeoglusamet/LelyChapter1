@@ -1,19 +1,20 @@
 package scenario.tests;
 
 import io.restassured.response.Response;
-import org.json.JSONArray;
-import org.json.JSONObject;
+import org.testng.Assert;
 import org.testng.annotations.Test;
 import scenario.base.BaseTest;
+import scenario.models.AllUserResponse;
+import scenario.models.User;
+
+import java.util.List;
 
 import static io.restassured.RestAssured.given;
-import static org.testng.Assert.assertTrue;
 
 public class GetAllUserTests extends BaseTest {
 
     private final String PATH = "/users ";
-    JSONObject jsonResponse;
-    JSONArray dataArray;
+    AllUserResponse allUserResponse;
 
     @Test
     public void getAllBookingTest() {
@@ -25,21 +26,13 @@ public class GetAllUserTests extends BaseTest {
                 .then()
                 .statusCode(200);
 
-        var responseBody = response.getBody().asString();
+        response.prettyPrint();
 
-        jsonResponse = new JSONObject(responseBody);
-        dataArray = jsonResponse.getJSONArray("data");
+        allUserResponse = response.as(AllUserResponse.class);
 
-        boolean allIdsAre7Digits = true;
-
-        for (int i = 0; i < dataArray.length(); i++) {
-            var user = dataArray.getJSONObject(i);
-            var id = user.getInt("id");
-            if (String.valueOf(id).length() != 7) {
-                allIdsAre7Digits = false;
-                break;
-            }
+        List<User> userList = allUserResponse.getData();
+        for (User user : userList) {
+            Assert.assertEquals(String.valueOf(user.getId()).length(),7);
         }
-        assertTrue(allIdsAre7Digits, "Not all data.id values are 7-digit integers.");
     }
 }
